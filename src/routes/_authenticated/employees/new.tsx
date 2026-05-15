@@ -31,7 +31,7 @@ function NewEmployee() {
     setBusy(true);
     const { data: emp, error } = await supabase.from("employees").insert({
       emp_id: empId,
-      full_name: get("full_name"),
+      full_name: get("full_name") ?? "",
       dob: get("dob"),
       gender: get("gender"),
       pan: get("pan"),
