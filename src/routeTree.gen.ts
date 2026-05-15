@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedEmployeesIndexRouteImport } from './routes/_authenticated/employees/index'
+import { Route as AuthenticatedSalaryComponentsRouteImport } from './routes/_authenticated/salary/components'
 import { Route as AuthenticatedEmployeesNewRouteImport } from './routes/_authenticated/employees/new'
 import { Route as AuthenticatedEmployeesIdRouteImport } from './routes/_authenticated/employees/$id'
 
@@ -42,6 +43,12 @@ const AuthenticatedEmployeesIndexRoute =
     path: '/employees/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedSalaryComponentsRoute =
+  AuthenticatedSalaryComponentsRouteImport.update({
+    id: '/salary/components',
+    path: '/salary/components',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedEmployeesNewRoute =
   AuthenticatedEmployeesNewRouteImport.update({
     id: '/employees/new',
@@ -61,6 +68,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/new': typeof AuthenticatedEmployeesNewRoute
+  '/salary/components': typeof AuthenticatedSalaryComponentsRoute
   '/employees/': typeof AuthenticatedEmployeesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +77,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/new': typeof AuthenticatedEmployeesNewRoute
+  '/salary/components': typeof AuthenticatedSalaryComponentsRoute
   '/employees': typeof AuthenticatedEmployeesIndexRoute
 }
 export interface FileRoutesById {
@@ -79,6 +88,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/_authenticated/employees/new': typeof AuthenticatedEmployeesNewRoute
+  '/_authenticated/salary/components': typeof AuthenticatedSalaryComponentsRoute
   '/_authenticated/employees/': typeof AuthenticatedEmployeesIndexRoute
 }
 export interface FileRouteTypes {
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/employees/$id'
     | '/employees/new'
+    | '/salary/components'
     | '/employees/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/employees/$id'
     | '/employees/new'
+    | '/salary/components'
     | '/employees'
   id:
     | '__root__'
@@ -106,6 +118,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/employees/$id'
     | '/_authenticated/employees/new'
+    | '/_authenticated/salary/components'
     | '/_authenticated/employees/'
   fileRoutesById: FileRoutesById
 }
@@ -152,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeesIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/salary/components': {
+      id: '/_authenticated/salary/components'
+      path: '/salary/components'
+      fullPath: '/salary/components'
+      preLoaderRoute: typeof AuthenticatedSalaryComponentsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/employees/new': {
       id: '/_authenticated/employees/new'
       path: '/employees/new'
@@ -173,6 +193,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEmployeesIdRoute: typeof AuthenticatedEmployeesIdRoute
   AuthenticatedEmployeesNewRoute: typeof AuthenticatedEmployeesNewRoute
+  AuthenticatedSalaryComponentsRoute: typeof AuthenticatedSalaryComponentsRoute
   AuthenticatedEmployeesIndexRoute: typeof AuthenticatedEmployeesIndexRoute
 }
 
@@ -180,6 +201,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEmployeesIdRoute: AuthenticatedEmployeesIdRoute,
   AuthenticatedEmployeesNewRoute: AuthenticatedEmployeesNewRoute,
+  AuthenticatedSalaryComponentsRoute: AuthenticatedSalaryComponentsRoute,
   AuthenticatedEmployeesIndexRoute: AuthenticatedEmployeesIndexRoute,
 }
 
