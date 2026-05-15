@@ -82,7 +82,7 @@ function ComponentsPage() {
         {loading ? <TableSkeleton cols={5} /> : rows.length === 0 ? <EmptyState title="No components" /> : (
           <DataTable>
             <thead className="bg-muted">
-              <tr><Th>Name</Th><Th>Type</Th><Th>Calculation</Th><Th>Default</Th><Th>Taxable</Th><Th></Th></tr>
+              <tr><Th>Name</Th><Th>Type</Th><Th>Calculation</Th><Th>Default</Th><Th>Taxable</Th><Th>{""}</Th></tr>
             </thead>
             <tbody>
               {rows.map((r) => (
