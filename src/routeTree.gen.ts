@@ -17,6 +17,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedEmployeesIndexRouteImport } from './routes/_authenticated/employees/index'
 import { Route as AuthenticatedSalaryStructuresRouteImport } from './routes/_authenticated/salary/structures'
 import { Route as AuthenticatedSalaryComponentsRouteImport } from './routes/_authenticated/salary/components'
+import { Route as AuthenticatedPayrollRunRouteImport } from './routes/_authenticated/payroll/run'
 import { Route as AuthenticatedEmployeesNewRouteImport } from './routes/_authenticated/employees/new'
 import { Route as AuthenticatedEmployeesIdRouteImport } from './routes/_authenticated/employees/$id'
 
@@ -62,6 +63,11 @@ const AuthenticatedSalaryComponentsRoute =
     path: '/salary/components',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPayrollRunRoute = AuthenticatedPayrollRunRouteImport.update({
+  id: '/payroll/run',
+  path: '/payroll/run',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedEmployeesNewRoute =
   AuthenticatedEmployeesNewRouteImport.update({
     id: '/employees/new',
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/onboard/$token': typeof OnboardTokenRoute
   '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/new': typeof AuthenticatedEmployeesNewRoute
+  '/payroll/run': typeof AuthenticatedPayrollRunRoute
   '/salary/components': typeof AuthenticatedSalaryComponentsRoute
   '/salary/structures': typeof AuthenticatedSalaryStructuresRoute
   '/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/onboard/$token': typeof OnboardTokenRoute
   '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/new': typeof AuthenticatedEmployeesNewRoute
+  '/payroll/run': typeof AuthenticatedPayrollRunRoute
   '/salary/components': typeof AuthenticatedSalaryComponentsRoute
   '/salary/structures': typeof AuthenticatedSalaryStructuresRoute
   '/employees': typeof AuthenticatedEmployeesIndexRoute
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/onboard/$token': typeof OnboardTokenRoute
   '/_authenticated/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/_authenticated/employees/new': typeof AuthenticatedEmployeesNewRoute
+  '/_authenticated/payroll/run': typeof AuthenticatedPayrollRunRoute
   '/_authenticated/salary/components': typeof AuthenticatedSalaryComponentsRoute
   '/_authenticated/salary/structures': typeof AuthenticatedSalaryStructuresRoute
   '/_authenticated/employees/': typeof AuthenticatedEmployeesIndexRoute
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/onboard/$token'
     | '/employees/$id'
     | '/employees/new'
+    | '/payroll/run'
     | '/salary/components'
     | '/salary/structures'
     | '/employees/'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/onboard/$token'
     | '/employees/$id'
     | '/employees/new'
+    | '/payroll/run'
     | '/salary/components'
     | '/salary/structures'
     | '/employees'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/onboard/$token'
     | '/_authenticated/employees/$id'
     | '/_authenticated/employees/new'
+    | '/_authenticated/payroll/run'
     | '/_authenticated/salary/components'
     | '/_authenticated/salary/structures'
     | '/_authenticated/employees/'
@@ -212,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSalaryComponentsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/payroll/run': {
+      id: '/_authenticated/payroll/run'
+      path: '/payroll/run'
+      fullPath: '/payroll/run'
+      preLoaderRoute: typeof AuthenticatedPayrollRunRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/employees/new': {
       id: '/_authenticated/employees/new'
       path: '/employees/new'
@@ -233,6 +252,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEmployeesIdRoute: typeof AuthenticatedEmployeesIdRoute
   AuthenticatedEmployeesNewRoute: typeof AuthenticatedEmployeesNewRoute
+  AuthenticatedPayrollRunRoute: typeof AuthenticatedPayrollRunRoute
   AuthenticatedSalaryComponentsRoute: typeof AuthenticatedSalaryComponentsRoute
   AuthenticatedSalaryStructuresRoute: typeof AuthenticatedSalaryStructuresRoute
   AuthenticatedEmployeesIndexRoute: typeof AuthenticatedEmployeesIndexRoute
@@ -242,6 +262,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEmployeesIdRoute: AuthenticatedEmployeesIdRoute,
   AuthenticatedEmployeesNewRoute: AuthenticatedEmployeesNewRoute,
+  AuthenticatedPayrollRunRoute: AuthenticatedPayrollRunRoute,
   AuthenticatedSalaryComponentsRoute: AuthenticatedSalaryComponentsRoute,
   AuthenticatedSalaryStructuresRoute: AuthenticatedSalaryStructuresRoute,
   AuthenticatedEmployeesIndexRoute: AuthenticatedEmployeesIndexRoute,
@@ -260,3 +281,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
