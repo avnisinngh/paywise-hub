@@ -89,6 +89,7 @@ export type Database = {
         Row: {
           aadhaar: string | null
           account_holder_name: string | null
+          address: string | null
           bank_account: string | null
           bank_name: string | null
           created_at: string
@@ -96,6 +97,8 @@ export type Database = {
           department: string | null
           designation: string | null
           dob: string | null
+          documents: Json
+          emergency_contact: string | null
           emp_id: string
           employment_type: string | null
           esi_applicable: boolean | null
@@ -103,6 +106,7 @@ export type Database = {
           gender: string | null
           id: string
           ifsc: string | null
+          onboarded_at: string | null
           pan: string | null
           personal_email: string | null
           pf_applicable: boolean | null
@@ -115,6 +119,7 @@ export type Database = {
         Insert: {
           aadhaar?: string | null
           account_holder_name?: string | null
+          address?: string | null
           bank_account?: string | null
           bank_name?: string | null
           created_at?: string
@@ -122,6 +127,8 @@ export type Database = {
           department?: string | null
           designation?: string | null
           dob?: string | null
+          documents?: Json
+          emergency_contact?: string | null
           emp_id: string
           employment_type?: string | null
           esi_applicable?: boolean | null
@@ -129,6 +136,7 @@ export type Database = {
           gender?: string | null
           id?: string
           ifsc?: string | null
+          onboarded_at?: string | null
           pan?: string | null
           personal_email?: string | null
           pf_applicable?: boolean | null
@@ -141,6 +149,7 @@ export type Database = {
         Update: {
           aadhaar?: string | null
           account_holder_name?: string | null
+          address?: string | null
           bank_account?: string | null
           bank_name?: string | null
           created_at?: string
@@ -148,6 +157,8 @@ export type Database = {
           department?: string | null
           designation?: string | null
           dob?: string | null
+          documents?: Json
+          emergency_contact?: string | null
           emp_id?: string
           employment_type?: string | null
           esi_applicable?: boolean | null
@@ -155,6 +166,7 @@ export type Database = {
           gender?: string | null
           id?: string
           ifsc?: string | null
+          onboarded_at?: string | null
           pan?: string | null
           personal_email?: string | null
           pf_applicable?: boolean | null

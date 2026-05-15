@@ -1,13 +1,17 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/app/PageHeader";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/app/Table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, Loader2, Mail, Phone, Building2, Briefcase, Calendar } from "lucide-react";
+import { ArrowLeft, Loader2, Mail, Phone, Building2, Briefcase, Calendar, Link2, Copy, Download, FileText } from "lucide-react";
 import { formatDate, formatINR } from "@/lib/format";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { createOnboardingToken } from "@/lib/onboarding.functions";
+import { generatePayslipPDF } from "@/lib/payslip-pdf";
+import { monthName } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/employees/$id")({ component: EmployeeDetail });
 
@@ -17,16 +21,39 @@ function EmployeeDetail() {
   const [emp, setEmp] = useState<any>(null);
   const [salary, setSalary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [payslips, setPayslips] = useState<any[]>([]);
+  const [onbLink, setOnbLink] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const createToken = useServerFn(createOnboardingToken);
 
   useEffect(() => {
     (async () => {
-      const [{ data: e }, { data: s }] = await Promise.all([
+      const [{ data: e }, { data: s }, { data: p }] = await Promise.all([
         supabase.from("employees").select("*").eq("id", id).maybeSingle(),
         supabase.from("employee_salary").select("*, salary_structures(name)").eq("employee_id", id).order("effective_from", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("payslips").select("*, payroll_runs(month, year, finalized_at)").eq("employee_id", id),
       ]);
-      setEmp(e); setSalary(s); setLoading(false);
+      setEmp(e); setSalary(s); setPayslips(p ?? []); setLoading(false);
     })();
   }, [id]);
+
+  const generateLink = async () => {
+    setBusy(true);
+    try {
+      const { token } = await createToken({ data: { employee_id: id } });
+      const url = `${window.location.origin}/onboard/${token}`;
+      setOnbLink(url);
+      await navigator.clipboard.writeText(url).catch(() => {});
+      toast.success("Onboarding link generated and copied");
+    } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
+  };
+
+  const downloadPayslip = (slip: any) => {
+    generatePayslipPDF({
+      ...slip.payslip_data,
+      employee: { ...slip.payslip_data.employee, pan: emp.pan, bank_account: emp.bank_account, ifsc: emp.ifsc },
+    });
+  };
 
   const toggleStatus = async () => {
     const next = emp.status === "Active" ? "Inactive" : "Active";
@@ -61,9 +88,27 @@ function EmployeeDetail() {
               <div className="mt-2"><StatusBadge status={emp.status === "Active" ? "active" : "inactive"}>{emp.status}</StatusBadge></div>
             </div>
           </div>
-          <Button variant="outline" onClick={toggleStatus}>Mark {emp.status === "Active" ? "Inactive" : "Active"}</Button>
+          <div className="flex gap-2">
+            {!emp.onboarded_at && (
+              <Button variant="outline" onClick={generateLink} disabled={busy}>
+                {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Link2 className="h-4 w-4 mr-1" />}
+                Send Onboarding Link
+              </Button>
+            )}
+            <Button variant="outline" onClick={toggleStatus}>Mark {emp.status === "Active" ? "Inactive" : "Active"}</Button>
+          </div>
         </div>
       </div>
+
+      {onbLink && (
+        <div className="card-elev p-4 mb-5 bg-primary/5 border-primary/20">
+          <div className="text-xs uppercase text-muted-foreground tracking-wide mb-1">Onboarding link (share with employee)</div>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 text-xs bg-white border rounded px-2 py-1.5 truncate">{onbLink}</code>
+            <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(onbLink); toast.success("Copied"); }}><Copy className="h-3.5 w-3.5" /></Button>
+          </div>
+        </div>
+      )}
 
       <Tabs defaultValue="profile">
         <TabsList>
@@ -120,10 +165,34 @@ function EmployeeDetail() {
         </TabsContent>
 
         <TabsContent value="documents" className="mt-4">
-          <div className="card-elev p-10 text-center text-muted-foreground text-sm">Document uploads will be enabled in the onboarding module.</div>
+          <div className="card-elev p-5">
+            {!emp.documents || emp.documents.length === 0
+              ? <div className="py-10 text-center text-muted-foreground text-sm">No documents uploaded yet. {emp.onboarded_at ? "" : "Send the onboarding link to collect them."}</div>
+              : <div className="space-y-2">{emp.documents.map((d: any, i: number) => (
+                  <div key={i} className="flex items-center justify-between border rounded-md px-3 py-2.5">
+                    <div className="flex items-center gap-2 text-sm"><FileText className="h-4 w-4 text-muted-foreground" /><span className="font-medium">{d.label}</span></div>
+                    <Button size="sm" variant="ghost" onClick={async () => {
+                      const { data } = await supabase.storage.from("employee-docs").createSignedUrl(d.path, 60);
+                      if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+                    }}><Download className="h-4 w-4" /></Button>
+                  </div>
+                ))}</div>}
+          </div>
         </TabsContent>
         <TabsContent value="payslips" className="mt-4">
-          <div className="card-elev p-10 text-center text-muted-foreground text-sm">Payslips will appear here after payroll is finalized.</div>
+          <div className="card-elev p-5">
+            {payslips.length === 0
+              ? <div className="py-10 text-center text-muted-foreground text-sm">No payslips yet. They appear here after payroll is finalized.</div>
+              : <div className="space-y-2">
+                  {payslips.sort((a, b) => (b.payroll_runs?.year - a.payroll_runs?.year) || (b.payroll_runs?.month - a.payroll_runs?.month)).map((s) => (
+                    <div key={s.id} className="flex items-center justify-between border rounded-md px-3 py-2.5">
+                      <div className="text-sm"><div className="font-medium">{monthName(s.payroll_runs?.month)} {s.payroll_runs?.year}</div>
+                        <div className="text-xs text-muted-foreground">Net Pay: {formatINR(s.payslip_data?.netPay ?? 0)}</div></div>
+                      <Button size="sm" variant="ghost" onClick={() => downloadPayslip(s)}><Download className="h-4 w-4 mr-1" /> PDF</Button>
+                    </div>
+                  ))}
+                </div>}
+          </div>
         </TabsContent>
         <TabsContent value="leave" className="mt-4">
           <div className="card-elev p-10 text-center text-muted-foreground text-sm">Leave history coming in next phase.</div>
