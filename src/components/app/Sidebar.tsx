@@ -25,6 +25,7 @@ const NAV: NavItem[] = [
     { label: "Payroll History", to: "/payroll/history" },
   ]},
   { label: "Leave & Attendance", icon: CalendarDays, children: [
+    { label: "Leave Types", to: "/leave/types" },
     { label: "Leave Requests", to: "/leave/requests" },
     { label: "Attendance", to: "/leave/attendance" },
     { label: "Leave Balances", to: "/leave/balances" },

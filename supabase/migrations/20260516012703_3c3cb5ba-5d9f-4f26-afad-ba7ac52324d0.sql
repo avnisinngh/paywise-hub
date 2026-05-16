@@ -1,0 +1,1 @@
+ALTER TABLE public.attendance ADD CONSTRAINT attendance_employee_date_unique UNIQUE (employee_id, date);
