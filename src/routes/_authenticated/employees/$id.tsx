@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/app/PageHeader";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/app/Table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, Loader2, Mail, Phone, Building2, Briefcase, Calendar, Link2, Copy, Download, FileText } from "lucide-react";
+import { ArrowLeft, Loader2, Mail, Phone, Building2, Briefcase, Calendar, Link2, Copy, Download, FileText, Pencil } from "lucide-react";
 import { formatDate, formatINR } from "@/lib/format";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -95,6 +95,9 @@ function EmployeeDetail() {
                 Send Onboarding Link
               </Button>
             )}
+            <Button variant="outline" onClick={() => navigate({ to: "/employees/$id/edit", params: { id } })}>
+              <Pencil className="h-4 w-4 mr-1" /> Edit
+            </Button>
             <Button variant="outline" onClick={toggleStatus}>Mark {emp.status === "Active" ? "Inactive" : "Active"}</Button>
           </div>
         </div>
@@ -145,6 +148,55 @@ function EmployeeDetail() {
               <Row label="Account Number" value={emp.bank_account ? "••••" + String(emp.bank_account).slice(-4) : "—"} />
               <Row label="IFSC" value={emp.ifsc ?? "—"} />
               <Row label="Bank" value={emp.bank_name ?? "—"} />
+            </Panel>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+            <Panel title="Skills">
+              {emp.skills
+                ? <div className="flex flex-wrap gap-1.5">
+                    {String(emp.skills).split(",").map((s: string) => s.trim()).filter(Boolean).map((s: string, i: number) => (
+                      <span key={i} className="text-xs px-2 py-1 rounded-md bg-primary/10 text-primary border border-primary/20">{s}</span>
+                    ))}
+                  </div>
+                : <div className="text-sm text-muted-foreground">No skills listed.</div>}
+            </Panel>
+            <Panel title="Academic Qualifications">
+              {Array.isArray(emp.academic_qualifications) && emp.academic_qualifications.length > 0
+                ? <div className="space-y-2">
+                    {emp.academic_qualifications.map((q: any, i: number) => (
+                      <div key={i} className="text-sm border-b last:border-0 pb-2 last:pb-0">
+                        <div className="font-medium text-secondary-foreground">{q.name || "—"}</div>
+                        <div className="text-xs text-muted-foreground">{[q.institution, q.year].filter(Boolean).join(" · ") || "—"}</div>
+                      </div>
+                    ))}
+                  </div>
+                : <div className="text-sm text-muted-foreground">No academic qualifications.</div>}
+            </Panel>
+            <Panel title="Professional Qualifications">
+              {Array.isArray(emp.professional_qualifications) && emp.professional_qualifications.length > 0
+                ? <div className="space-y-2">
+                    {emp.professional_qualifications.map((q: any, i: number) => (
+                      <div key={i} className="text-sm border-b last:border-0 pb-2 last:pb-0">
+                        <div className="font-medium text-secondary-foreground">{q.name || "—"}</div>
+                        <div className="text-xs text-muted-foreground">{[q.institution, q.year].filter(Boolean).join(" · ") || "—"}</div>
+                      </div>
+                    ))}
+                  </div>
+                : <div className="text-sm text-muted-foreground">No certifications.</div>}
+            </Panel>
+            <Panel title="Previous Experience">
+              {Array.isArray(emp.previous_experience) && emp.previous_experience.length > 0
+                ? <div className="space-y-3">
+                    {emp.previous_experience.map((x: any, i: number) => (
+                      <div key={i} className="text-sm border-b last:border-0 pb-3 last:pb-0">
+                        <div className="font-medium text-secondary-foreground">{x.designation || "—"} <span className="text-muted-foreground font-normal">at {x.company || "—"}</span></div>
+                        <div className="text-xs text-muted-foreground">{[x.from, x.to].filter(Boolean).join(" – ") || "—"}</div>
+                        {x.description && <div className="text-xs text-muted-foreground mt-1">{x.description}</div>}
+                      </div>
+                    ))}
+                  </div>
+                : <div className="text-sm text-muted-foreground">No previous experience recorded.</div>}
             </Panel>
           </div>
         </TabsContent>
