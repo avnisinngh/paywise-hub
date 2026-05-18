@@ -51,13 +51,16 @@ export function emptyEmployeeValues(empId = ""): EmployeeFormValues {
 
 export function valuesFromEmployee(e: any): EmployeeFormValues {
   const base = emptyEmployeeValues();
-  return {
-    ...base,
-    ...Object.fromEntries(Object.keys(base).map((k) => [k, e?.[k] ?? base[k as keyof EmployeeFormValues]])),
-    previous_experience: Array.isArray(e?.previous_experience) ? e.previous_experience : [],
-    academic_qualifications: Array.isArray(e?.academic_qualifications) ? e.academic_qualifications : [],
-    professional_qualifications: Array.isArray(e?.professional_qualifications) ? e.professional_qualifications : [],
-  } as EmployeeFormValues;
+  const merged: any = { ...base };
+  for (const k of Object.keys(base)) {
+    const v = e?.[k];
+    if (v === null || v === undefined) continue;
+    merged[k] = v;
+  }
+  merged.previous_experience = Array.isArray(e?.previous_experience) ? e.previous_experience : [];
+  merged.academic_qualifications = Array.isArray(e?.academic_qualifications) ? e.academic_qualifications : [];
+  merged.professional_qualifications = Array.isArray(e?.professional_qualifications) ? e.professional_qualifications : [];
+  return merged as EmployeeFormValues;
 }
 
 export function EmployeeForm({
