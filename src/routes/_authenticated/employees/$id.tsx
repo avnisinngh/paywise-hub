@@ -125,10 +125,12 @@ function EmployeeDetail() {
             <Panel title="Personal">
               <Row label="Date of Birth" value={formatDate(emp.dob)} />
               <Row label="Gender" value={emp.gender ?? "—"} />
+              <Row label="Father's Name" value={emp.father_name ?? "—"} />
               <Row label="PAN" value={emp.pan ?? "—"} />
               <Row label="Aadhaar" value={emp.aadhaar ?? "—"} />
               <Row label="Email" value={emp.personal_email ?? "—"} icon={<Mail className="h-3 w-3" />} />
               <Row label="Phone" value={emp.phone ?? "—"} icon={<Phone className="h-3 w-3" />} />
+              <Row label="Emergency Contact" value={emp.emergency_contact_name || emp.emergency_contact ? `${emp.emergency_contact_name ?? ""}${emp.emergency_contact_name && emp.emergency_contact ? " · " : ""}${emp.emergency_contact ?? ""}` : "—"} />
             </Panel>
             <Panel title="Employment">
               <Row label="Date of Joining" value={formatDate(emp.date_of_joining)} icon={<Calendar className="h-3 w-3" />} />

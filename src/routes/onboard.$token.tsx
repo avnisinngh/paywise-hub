@@ -95,6 +95,7 @@ function OnboardPage() {
           {step === 0 && (
             <Grid>
               <Field label="Full Name" required><Input value={form.full_name ?? ""} onChange={(e) => update("full_name", e.target.value)} /></Field>
+              <Field label="Father's Name"><Input value={form.father_name ?? ""} onChange={(e) => update("father_name", e.target.value)} /></Field>
               <Field label="Date of Birth"><Input type="date" value={form.dob ?? ""} onChange={(e) => update("dob", e.target.value)} /></Field>
               <Field label="Gender"><select className="h-10 border rounded-md px-3 w-full text-sm" value={form.gender ?? ""} onChange={(e) => update("gender", e.target.value)}><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></Field>
               <Field label="Personal Email"><Input type="email" value={form.personal_email ?? ""} onChange={(e) => update("personal_email", e.target.value)} /></Field>
@@ -104,7 +105,8 @@ function OnboardPage() {
           {step === 1 && (
             <Grid>
               <Field label="Address" full><Textarea rows={3} value={form.address ?? ""} onChange={(e) => update("address", e.target.value)} /></Field>
-              <Field label="Emergency Contact" full><Input placeholder="Name & phone" value={form.emergency_contact ?? ""} onChange={(e) => update("emergency_contact", e.target.value)} /></Field>
+              <Field label="Emergency Contact Name"><Input value={form.emergency_contact_name ?? ""} onChange={(e) => update("emergency_contact_name", e.target.value)} /></Field>
+              <Field label="Emergency Contact Phone"><Input value={form.emergency_contact ?? ""} onChange={(e) => update("emergency_contact", e.target.value)} /></Field>
             </Grid>
           )}
           {step === 2 && (

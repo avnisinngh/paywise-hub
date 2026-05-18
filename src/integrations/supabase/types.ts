@@ -99,9 +99,11 @@ export type Database = {
           dob: string | null
           documents: Json
           emergency_contact: string | null
+          emergency_contact_name: string | null
           emp_id: string
           employment_type: string | null
           esi_applicable: boolean | null
+          father_name: string | null
           full_name: string
           gender: string | null
           id: string
@@ -129,9 +131,11 @@ export type Database = {
           dob?: string | null
           documents?: Json
           emergency_contact?: string | null
+          emergency_contact_name?: string | null
           emp_id: string
           employment_type?: string | null
           esi_applicable?: boolean | null
+          father_name?: string | null
           full_name: string
           gender?: string | null
           id?: string
@@ -159,9 +163,11 @@ export type Database = {
           dob?: string | null
           documents?: Json
           emergency_contact?: string | null
+          emergency_contact_name?: string | null
           emp_id?: string
           employment_type?: string | null
           esi_applicable?: boolean | null
+          father_name?: string | null
           full_name?: string
           gender?: string | null
           id?: string
