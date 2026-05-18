@@ -88,6 +88,7 @@ export type Database = {
       employees: {
         Row: {
           aadhaar: string | null
+          academic_qualifications: Json
           account_holder_name: string | null
           address: string | null
           bank_account: string | null
@@ -113,13 +114,17 @@ export type Database = {
           personal_email: string | null
           pf_applicable: boolean | null
           phone: string | null
+          previous_experience: Json
+          professional_qualifications: Json
           pt_applicable: boolean | null
+          skills: string | null
           status: string
           updated_at: string
           work_location: string | null
         }
         Insert: {
           aadhaar?: string | null
+          academic_qualifications?: Json
           account_holder_name?: string | null
           address?: string | null
           bank_account?: string | null
@@ -145,13 +150,17 @@ export type Database = {
           personal_email?: string | null
           pf_applicable?: boolean | null
           phone?: string | null
+          previous_experience?: Json
+          professional_qualifications?: Json
           pt_applicable?: boolean | null
+          skills?: string | null
           status?: string
           updated_at?: string
           work_location?: string | null
         }
         Update: {
           aadhaar?: string | null
+          academic_qualifications?: Json
           account_holder_name?: string | null
           address?: string | null
           bank_account?: string | null
@@ -177,7 +186,10 @@ export type Database = {
           personal_email?: string | null
           pf_applicable?: boolean | null
           phone?: string | null
+          previous_experience?: Json
+          professional_qualifications?: Json
           pt_applicable?: boolean | null
+          skills?: string | null
           status?: string
           updated_at?: string
           work_location?: string | null
