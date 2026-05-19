@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, CheckCircle2, Upload, Wallet } from "lucide-react";
+import { Loader2, CheckCircle2, Upload, Wallet, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/onboard/$token")({ component: OnboardPage });
 
-const STEPS = ["Personal", "Address", "Bank", "Statutory", "Documents", "Review"];
+const STEPS = ["Personal", "Address", "Bank", "Statutory", "Experience", "Documents", "Review"];
 
 function OnboardPage() {
   const { token } = Route.useParams();
@@ -26,7 +26,7 @@ function OnboardPage() {
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
   const [emp, setEmp] = useState<any>(null);
-  const [form, setForm] = useState<any>({ documents: [] });
+  const [form, setForm] = useState<any>({ documents: [], previous_experience: [], academic_qualifications: [], professional_qualifications: [] });
 
   useEffect(() => {
     validate({ data: { token } })
@@ -36,6 +36,17 @@ function OnboardPage() {
   }, [token]);
 
   const update = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
+
+  const updateList = (k: string, idx: number, patch: any) =>
+    setForm((f: any) => ({ ...f, [k]: (f[k] ?? []).map((it: any, i: number) => i === idx ? { ...it, ...patch } : it) }));
+  const addItem = (k: string, empty: any, max?: number) =>
+    setForm((f: any) => {
+      const list = f[k] ?? [];
+      if (max && list.length >= max) return f;
+      return { ...f, [k]: [...list, empty] };
+    });
+  const removeItem = (k: string, idx: number) =>
+    setForm((f: any) => ({ ...f, [k]: (f[k] ?? []).filter((_: any, i: number) => i !== idx) }));
 
   const onUploadFile = async (label: string, file: File) => {
     if (file.size > 5 * 1024 * 1024) return toast.error("Max 5 MB");
@@ -124,6 +135,63 @@ function OnboardPage() {
             </Grid>
           )}
           {step === 4 && (
+            <div className="space-y-5">
+              <div>
+                <Label>Skills</Label>
+                <Textarea rows={3} placeholder="React, Node, SQL…" value={form.skills ?? ""} onChange={(e) => update("skills", e.target.value)} />
+                <p className="text-xs text-muted-foreground mt-1">Comma-separated list.</p>
+              </div>
+
+              <Repeater
+                title="Previous Experience"
+                subtitle="Up to 3 most recent employers."
+                items={form.previous_experience ?? []}
+                max={3}
+                onAdd={() => addItem("previous_experience", { company: "", designation: "", from: "", to: "", description: "" }, 3)}
+                onRemove={(i) => removeItem("previous_experience", i)}
+                renderItem={(it, i) => (
+                  <Grid>
+                    <Field label="Company"><Input value={it.company ?? ""} onChange={(e) => updateList("previous_experience", i, { company: e.target.value })} /></Field>
+                    <Field label="Designation"><Input value={it.designation ?? ""} onChange={(e) => updateList("previous_experience", i, { designation: e.target.value })} /></Field>
+                    <Field label="From"><Input type="month" value={it.from ?? ""} onChange={(e) => updateList("previous_experience", i, { from: e.target.value })} /></Field>
+                    <Field label="To"><Input type="month" value={it.to ?? ""} onChange={(e) => updateList("previous_experience", i, { to: e.target.value })} /></Field>
+                    <Field label="Description" full><Textarea rows={2} value={it.description ?? ""} onChange={(e) => updateList("previous_experience", i, { description: e.target.value })} /></Field>
+                  </Grid>
+                )}
+              />
+
+              <Repeater
+                title="Academic Qualifications"
+                subtitle="Degrees / education history."
+                items={form.academic_qualifications ?? []}
+                onAdd={() => addItem("academic_qualifications", { name: "", institution: "", year: "" })}
+                onRemove={(i) => removeItem("academic_qualifications", i)}
+                renderItem={(it, i) => (
+                  <Grid>
+                    <Field label="Qualification"><Input placeholder="B.Tech, MBA…" value={it.name ?? ""} onChange={(e) => updateList("academic_qualifications", i, { name: e.target.value })} /></Field>
+                    <Field label="Institution / Board"><Input value={it.institution ?? ""} onChange={(e) => updateList("academic_qualifications", i, { institution: e.target.value })} /></Field>
+                    <Field label="Year"><Input value={it.year ?? ""} onChange={(e) => updateList("academic_qualifications", i, { year: e.target.value })} /></Field>
+                  </Grid>
+                )}
+              />
+
+              <Repeater
+                title="Professional Qualifications"
+                subtitle="Certifications, licenses, courses."
+                items={form.professional_qualifications ?? []}
+                onAdd={() => addItem("professional_qualifications", { name: "", institution: "", year: "" })}
+                onRemove={(i) => removeItem("professional_qualifications", i)}
+                renderItem={(it, i) => (
+                  <Grid>
+                    <Field label="Certification"><Input placeholder="PMP, AWS SAA…" value={it.name ?? ""} onChange={(e) => updateList("professional_qualifications", i, { name: e.target.value })} /></Field>
+                    <Field label="Issuing Body"><Input value={it.institution ?? ""} onChange={(e) => updateList("professional_qualifications", i, { institution: e.target.value })} /></Field>
+                    <Field label="Year"><Input value={it.year ?? ""} onChange={(e) => updateList("professional_qualifications", i, { year: e.target.value })} /></Field>
+                  </Grid>
+                )}
+              />
+            </div>
+          )}
+          {step === 5 && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">Upload scans (PDF/JPG/PNG, max 5 MB each).</p>
               {["PAN Card", "Aadhaar Card", "Bank Proof", "Offer Letter"].map((label) => (
@@ -131,7 +199,7 @@ function OnboardPage() {
               ))}
             </div>
           )}
-          {step === 5 && (
+          {step === 6 && (
             <div className="space-y-3 text-sm">
               <ReviewRow k="Name" v={form.full_name} />
               <ReviewRow k="DOB" v={form.dob} />
@@ -142,6 +210,10 @@ function OnboardPage() {
               <ReviewRow k="IFSC" v={form.ifsc} />
               <ReviewRow k="PAN" v={form.pan} />
               <ReviewRow k="Aadhaar" v={form.aadhaar} />
+              <ReviewRow k="Skills" v={form.skills} />
+              <ReviewRow k="Experience" v={`${form.previous_experience?.length ?? 0} entries`} />
+              <ReviewRow k="Academic" v={`${form.academic_qualifications?.length ?? 0} entries`} />
+              <ReviewRow k="Professional" v={`${form.professional_qualifications?.length ?? 0} entries`} />
               <ReviewRow k="Documents" v={`${form.documents?.length ?? 0} uploaded`} />
             </div>
           )}
@@ -179,6 +251,33 @@ function DocRow({ label, existing, onSelect, busy }: { label: string; existing?:
         <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) onSelect(f); e.currentTarget.value = ""; }} />
         <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 border rounded-md hover:bg-accent"><Upload className="h-3.5 w-3.5" /> {existing ? "Replace" : "Upload"}</span>
       </label>
+    </div>
+  );
+}
+
+function Repeater({ title, subtitle, items, max, onAdd, onRemove, renderItem }: { title: string; subtitle?: string; items: any[]; max?: number; onAdd: () => void; onRemove: (i: number) => void; renderItem: (it: any, i: number) => React.ReactNode }) {
+  return (
+    <div className="border rounded-md p-4">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <h3 className="font-semibold text-sm">{title}</h3>
+          {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
+        </div>
+        <Button type="button" size="sm" variant="outline" onClick={onAdd} disabled={!!max && items.length >= max}>
+          <Plus className="h-3.5 w-3.5 mr-1" /> Add
+        </Button>
+      </div>
+      {items.length === 0 && <p className="text-xs text-muted-foreground py-3 text-center">No entries yet.</p>}
+      <div className="space-y-3">
+        {items.map((it, i) => (
+          <div key={i} className="border rounded-md p-3 relative bg-muted/30">
+            {renderItem(it, i)}
+            <Button type="button" size="sm" variant="ghost" className="absolute top-1.5 right-1.5 h-7 w-7 p-0" onClick={() => onRemove(i)}>
+              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+            </Button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
