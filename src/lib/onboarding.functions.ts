@@ -36,6 +36,24 @@ const SubmitInput = z.object({
   ifsc: z.string().max(20).nullable().optional(),
   bank_name: z.string().max(80).nullable().optional(),
   account_holder_name: z.string().max(120).nullable().optional(),
+  skills: z.string().max(2000).nullable().optional(),
+  previous_experience: z.array(z.object({
+    company: z.string().max(160).default(""),
+    designation: z.string().max(160).default(""),
+    from: z.string().max(20).default(""),
+    to: z.string().max(20).default(""),
+    description: z.string().max(1000).default(""),
+  })).max(3).optional(),
+  academic_qualifications: z.array(z.object({
+    name: z.string().max(160).default(""),
+    institution: z.string().max(200).default(""),
+    year: z.string().max(10).default(""),
+  })).max(20).optional(),
+  professional_qualifications: z.array(z.object({
+    name: z.string().max(160).default(""),
+    institution: z.string().max(200).default(""),
+    year: z.string().max(10).default(""),
+  })).max(20).optional(),
   documents: z.array(z.object({ label: z.string().max(60), path: z.string().max(300) })).max(10).default([]),
 });
 
