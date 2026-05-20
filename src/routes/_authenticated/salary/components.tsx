@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { DataTable, Th, Td, TableSkeleton, EmptyState } from "@/components/app/Table";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/salary/components")({ component: ComponentsPage });
@@ -16,6 +16,7 @@ function ComponentsPage() {
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<any | null>(null);
 
   const load = async () => {
     const { data } = await supabase.from("salary_components").select("*").order("type").order("name");
@@ -23,19 +24,22 @@ function ComponentsPage() {
   };
   useEffect(() => { load(); }, []);
 
-  const onAdd = async (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const { error } = await supabase.from("salary_components").insert({
+    const payload = {
       name: String(fd.get("name")),
       type: String(fd.get("type")),
       calc_type: String(fd.get("calc_type")),
       default_value: Number(fd.get("default_value") ?? 0),
       taxable: fd.get("taxable") === "on",
-    });
+    };
+    const { error } = editing
+      ? await supabase.from("salary_components").update(payload).eq("id", editing.id)
+      : await supabase.from("salary_components").insert(payload);
     if (error) return toast.error(error.message);
-    toast.success("Component added");
-    setOpen(false); load();
+    toast.success(editing ? "Component updated" : "Component added");
+    setOpen(false); setEditing(null); load();
   };
 
   const onDelete = async (id: string) => {
@@ -51,26 +55,26 @@ function ComponentsPage() {
         title="Salary Components"
         subtitle="Earnings and deductions used in salary structures"
         actions={
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
             <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-1" /> Add Component</Button></DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Add Salary Component</DialogTitle></DialogHeader>
-              <form onSubmit={onAdd} className="space-y-3">
-                <div><Label>Name</Label><Input name="name" required /></div>
+              <DialogHeader><DialogTitle>{editing ? "Edit" : "Add"} Salary Component</DialogTitle></DialogHeader>
+              <form onSubmit={onSubmit} className="space-y-3" key={editing?.id ?? "new"}>
+                <div><Label>Name</Label><Input name="name" required defaultValue={editing?.name ?? ""} /></div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><Label>Type</Label>
-                    <select name="type" className="h-9 w-full px-3 rounded-md border bg-background text-sm">
+                    <select name="type" defaultValue={editing?.type ?? "earning"} className="h-9 w-full px-3 rounded-md border bg-background text-sm">
                       <option value="earning">Earning</option><option value="deduction">Deduction</option>
                     </select>
                   </div>
                   <div><Label>Calculation</Label>
-                    <select name="calc_type" className="h-9 w-full px-3 rounded-md border bg-background text-sm">
+                    <select name="calc_type" defaultValue={editing?.calc_type ?? "fixed"} className="h-9 w-full px-3 rounded-md border bg-background text-sm">
                       <option value="fixed">Fixed</option><option value="percentage">% of Basic</option>
                     </select>
                   </div>
                 </div>
-                <div><Label>Default Value</Label><Input type="number" step="0.01" name="default_value" defaultValue="0" /></div>
-                <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="taxable" className="accent-primary h-4 w-4" defaultChecked /> Taxable</label>
+                <div><Label>Default Value</Label><Input type="number" step="0.01" name="default_value" defaultValue={editing?.default_value ?? 0} /></div>
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="taxable" className="accent-primary h-4 w-4" defaultChecked={editing ? !!editing.taxable : true} /> Taxable</label>
                 <DialogFooter><Button type="submit">Save</Button></DialogFooter>
               </form>
             </DialogContent>
@@ -92,7 +96,12 @@ function ComponentsPage() {
                   <Td>{r.calc_type === "percentage" ? `${r.default_value}% of Basic` : "Fixed"}</Td>
                   <Td>{r.calc_type === "fixed" ? `₹${Number(r.default_value).toLocaleString("en-IN")}` : `${r.default_value}%`}</Td>
                   <Td>{r.taxable ? "Yes" : "No"}</Td>
-                  <Td><button onClick={() => onDelete(r.id)} className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button></Td>
+                  <Td>
+                    <div className="flex items-center gap-1 justify-end">
+                      <button onClick={() => { setEditing(r); setOpen(true); }} className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-primary"><Pencil className="h-4 w-4" /></button>
+                      <button onClick={() => onDelete(r.id)} className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+                    </div>
+                  </Td>
                 </tr>
               ))}
             </tbody>

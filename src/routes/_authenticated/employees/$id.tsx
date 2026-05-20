@@ -5,13 +5,16 @@ import { PageHeader } from "@/components/app/PageHeader";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/app/Table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, Loader2, Mail, Phone, Building2, Briefcase, Calendar, Link2, Copy, Download, FileText, Pencil } from "lucide-react";
+import { ArrowLeft, Loader2, Mail, Phone, Building2, Briefcase, Calendar, Link2, Copy, Download, FileText, Pencil, Plus } from "lucide-react";
 import { formatDate, formatINR } from "@/lib/format";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { createOnboardingToken } from "@/lib/onboarding.functions";
 import { generatePayslipPDF } from "@/lib/payslip-pdf";
 import { monthName } from "@/lib/format";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/_authenticated/employees/$id")({ component: EmployeeDetail });
 
@@ -26,19 +29,50 @@ function EmployeeDetail() {
   const [payslips, setPayslips] = useState<any[]>([]);
   const [onbLink, setOnbLink] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [structures, setStructures] = useState<any[]>([]);
+  const [salaryOpen, setSalaryOpen] = useState(false);
+  const [sCtc, setSCtc] = useState<number>(0);
+  const [sStructure, setSStructure] = useState<string>("");
+  const [sFrom, setSFrom] = useState<string>(new Date().toISOString().slice(0, 10));
   const createToken = useServerFn(createOnboardingToken);
 
   useEffect(() => {
     if (isEditRoute) return;
     (async () => {
-      const [{ data: e }, { data: s }, { data: p }] = await Promise.all([
+      const [{ data: e }, { data: s }, { data: p }, { data: st }] = await Promise.all([
         supabase.from("employees").select("*").eq("id", id).maybeSingle(),
         supabase.from("employee_salary").select("*, salary_structures(name)").eq("employee_id", id).order("effective_from", { ascending: false }).limit(1).maybeSingle(),
         supabase.from("payslips").select("*, payroll_runs(month, year, finalized_at)").eq("employee_id", id),
+        supabase.from("salary_structures").select("id, name").order("name"),
       ]);
-      setEmp(e); setSalary(s); setPayslips(p ?? []); setLoading(false);
+      setEmp(e); setSalary(s); setPayslips(p ?? []); setStructures(st ?? []); setLoading(false);
     })();
   }, [id, isEditRoute]);
+
+  const openSalary = () => {
+    setSCtc(Number(salary?.ctc ?? 0));
+    setSStructure(salary?.structure_id ?? "");
+    setSFrom(salary?.effective_from ?? new Date().toISOString().slice(0, 10));
+    setSalaryOpen(true);
+  };
+
+  const saveSalary = async () => {
+    if (!sCtc || sCtc <= 0) return toast.error("Enter a valid CTC");
+    const payload: any = {
+      employee_id: id,
+      ctc: sCtc,
+      structure_id: sStructure || null,
+      effective_from: sFrom,
+    };
+    const { error } = salary
+      ? await supabase.from("employee_salary").update(payload).eq("id", salary.id)
+      : await supabase.from("employee_salary").insert(payload);
+    if (error) return toast.error(error.message);
+    toast.success("Salary saved");
+    setSalaryOpen(false);
+    const { data: s } = await supabase.from("employee_salary").select("*, salary_structures(name)").eq("employee_id", id).order("effective_from", { ascending: false }).limit(1).maybeSingle();
+    setSalary(s);
+  };
 
   const generateLink = async () => {
     setBusy(true);
@@ -207,6 +241,11 @@ function EmployeeDetail() {
 
         <TabsContent value="salary" className="mt-4">
           <div className="card-elev p-6">
+            <div className="flex justify-end mb-3">
+              <Button size="sm" variant="outline" onClick={openSalary}>
+                {salary ? <><Pencil className="h-4 w-4 mr-1" /> Edit Salary</> : <><Plus className="h-4 w-4 mr-1" /> Define Salary</>}
+              </Button>
+            </div>
             {salary ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -220,6 +259,30 @@ function EmployeeDetail() {
               <div className="py-10 text-center text-muted-foreground text-sm">No salary structure assigned yet.</div>
             )}
           </div>
+
+          <Dialog open={salaryOpen} onOpenChange={setSalaryOpen}>
+            <DialogContent>
+              <DialogHeader><DialogTitle>{salary ? "Edit Salary" : "Define Salary"}</DialogTitle></DialogHeader>
+              <div className="space-y-3">
+                <div><Label>Annual CTC (₹)</Label><Input type="number" step="1" value={sCtc} onChange={(e) => setSCtc(Number(e.target.value))} /></div>
+                <div>
+                  <Label>Salary Structure</Label>
+                  <select className="h-9 w-full px-3 rounded-md border bg-background text-sm" value={sStructure} onChange={(e) => setSStructure(e.target.value)}>
+                    <option value="">— None —</option>
+                    {structures.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                  {structures.length === 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">No structures yet. Create one under Salary → Structures.</p>
+                  )}
+                </div>
+                <div><Label>Effective From</Label><Input type="date" value={sFrom} onChange={(e) => setSFrom(e.target.value)} /></div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setSalaryOpen(false)}>Cancel</Button>
+                <Button onClick={saveSalary}>Save</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         <TabsContent value="documents" className="mt-4">
