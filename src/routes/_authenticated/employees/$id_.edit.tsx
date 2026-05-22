@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { EmployeeForm, emptyEmployeeValues, valuesFromEmployee, type EmployeeFormValues } from "@/components/app/EmployeeForm";
 
-export const Route = createFileRoute("/_authenticated/employees/$id/edit")({ component: EditEmployee });
+export const Route = createFileRoute("/_authenticated/employees/$id_/edit")({ component: EditEmployee });
 
 function EditEmployee() {
   const { id } = Route.useParams();

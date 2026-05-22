@@ -28,7 +28,7 @@ import { Route as AuthenticatedLeaveBalancesRouteImport } from './routes/_authen
 import { Route as AuthenticatedLeaveAttendanceRouteImport } from './routes/_authenticated/leave/attendance'
 import { Route as AuthenticatedEmployeesNewRouteImport } from './routes/_authenticated/employees/new'
 import { Route as AuthenticatedEmployeesIdRouteImport } from './routes/_authenticated/employees/$id'
-import { Route as AuthenticatedEmployeesIdEditRouteImport } from './routes/_authenticated/employees/$id.edit'
+import { Route as AuthenticatedEmployeesIdEditRouteImport } from './routes/_authenticated/employees/$id_.edit'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -135,9 +135,9 @@ const AuthenticatedEmployeesIdRoute =
   } as any)
 const AuthenticatedEmployeesIdEditRoute =
   AuthenticatedEmployeesIdEditRouteImport.update({
-    id: '/edit',
-    path: '/edit',
-    getParentRoute: () => AuthenticatedEmployeesIdRoute,
+    id: '/employees/$id_/edit',
+    path: '/employees/$id/edit',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -147,7 +147,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/onboard/$token': typeof OnboardTokenRoute
-  '/employees/$id': typeof AuthenticatedEmployeesIdRouteWithChildren
+  '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/new': typeof AuthenticatedEmployeesNewRoute
   '/leave/attendance': typeof AuthenticatedLeaveAttendanceRoute
   '/leave/balances': typeof AuthenticatedLeaveBalancesRoute
@@ -168,7 +168,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/onboard/$token': typeof OnboardTokenRoute
-  '/employees/$id': typeof AuthenticatedEmployeesIdRouteWithChildren
+  '/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/employees/new': typeof AuthenticatedEmployeesNewRoute
   '/leave/attendance': typeof AuthenticatedLeaveAttendanceRoute
   '/leave/balances': typeof AuthenticatedLeaveBalancesRoute
@@ -191,7 +191,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/onboard/$token': typeof OnboardTokenRoute
-  '/_authenticated/employees/$id': typeof AuthenticatedEmployeesIdRouteWithChildren
+  '/_authenticated/employees/$id': typeof AuthenticatedEmployeesIdRoute
   '/_authenticated/employees/new': typeof AuthenticatedEmployeesNewRoute
   '/_authenticated/leave/attendance': typeof AuthenticatedLeaveAttendanceRoute
   '/_authenticated/leave/balances': typeof AuthenticatedLeaveBalancesRoute
@@ -203,7 +203,7 @@ export interface FileRoutesById {
   '/_authenticated/salary/components': typeof AuthenticatedSalaryComponentsRoute
   '/_authenticated/salary/structures': typeof AuthenticatedSalaryStructuresRoute
   '/_authenticated/employees/': typeof AuthenticatedEmployeesIndexRoute
-  '/_authenticated/employees/$id/edit': typeof AuthenticatedEmployeesIdEditRoute
+  '/_authenticated/employees/$id_/edit': typeof AuthenticatedEmployeesIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -269,7 +269,7 @@ export interface FileRouteTypes {
     | '/_authenticated/salary/components'
     | '/_authenticated/salary/structures'
     | '/_authenticated/employees/'
-    | '/_authenticated/employees/$id/edit'
+    | '/_authenticated/employees/$id_/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -414,35 +414,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeesIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/employees/$id/edit': {
-      id: '/_authenticated/employees/$id/edit'
-      path: '/edit'
+    '/_authenticated/employees/$id_/edit': {
+      id: '/_authenticated/employees/$id_/edit'
+      path: '/employees/$id/edit'
       fullPath: '/employees/$id/edit'
       preLoaderRoute: typeof AuthenticatedEmployeesIdEditRouteImport
-      parentRoute: typeof AuthenticatedEmployeesIdRoute
+      parentRoute: typeof AuthenticatedRoute
     }
   }
 }
-
-interface AuthenticatedEmployeesIdRouteChildren {
-  AuthenticatedEmployeesIdEditRoute: typeof AuthenticatedEmployeesIdEditRoute
-}
-
-const AuthenticatedEmployeesIdRouteChildren: AuthenticatedEmployeesIdRouteChildren =
-  {
-    AuthenticatedEmployeesIdEditRoute: AuthenticatedEmployeesIdEditRoute,
-  }
-
-const AuthenticatedEmployeesIdRouteWithChildren =
-  AuthenticatedEmployeesIdRoute._addFileChildren(
-    AuthenticatedEmployeesIdRouteChildren,
-  )
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedEmployeesIdRoute: typeof AuthenticatedEmployeesIdRouteWithChildren
+  AuthenticatedEmployeesIdRoute: typeof AuthenticatedEmployeesIdRoute
   AuthenticatedEmployeesNewRoute: typeof AuthenticatedEmployeesNewRoute
   AuthenticatedLeaveAttendanceRoute: typeof AuthenticatedLeaveAttendanceRoute
   AuthenticatedLeaveBalancesRoute: typeof AuthenticatedLeaveBalancesRoute
@@ -454,13 +440,14 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSalaryComponentsRoute: typeof AuthenticatedSalaryComponentsRoute
   AuthenticatedSalaryStructuresRoute: typeof AuthenticatedSalaryStructuresRoute
   AuthenticatedEmployeesIndexRoute: typeof AuthenticatedEmployeesIndexRoute
+  AuthenticatedEmployeesIdEditRoute: typeof AuthenticatedEmployeesIdEditRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedEmployeesIdRoute: AuthenticatedEmployeesIdRouteWithChildren,
+  AuthenticatedEmployeesIdRoute: AuthenticatedEmployeesIdRoute,
   AuthenticatedEmployeesNewRoute: AuthenticatedEmployeesNewRoute,
   AuthenticatedLeaveAttendanceRoute: AuthenticatedLeaveAttendanceRoute,
   AuthenticatedLeaveBalancesRoute: AuthenticatedLeaveBalancesRoute,
@@ -472,6 +459,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSalaryComponentsRoute: AuthenticatedSalaryComponentsRoute,
   AuthenticatedSalaryStructuresRoute: AuthenticatedSalaryStructuresRoute,
   AuthenticatedEmployeesIndexRoute: AuthenticatedEmployeesIndexRoute,
+  AuthenticatedEmployeesIdEditRoute: AuthenticatedEmployeesIdEditRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -487,3 +475,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
